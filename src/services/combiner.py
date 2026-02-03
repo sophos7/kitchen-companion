@@ -126,8 +126,8 @@ def combine_ingredients(
             "quantity": total_quantity,
             "unit": unit,
             "display": display,
-            "category": category,
+            "category": category,  # Actually stores zone name
         })
 
-    # Sort by category
+    # Sort by zone (category field contains zone name)
     return sort_by_category(combined)

@@ -119,15 +119,32 @@ garlic
 onion
 ```
 
-### Categories (`categories.txt`)
+### Store Zones (`categories.txt`)
 
-Organize shopping lists by store sections:
+Organize shopping lists by your store's actual layout using numbered zones:
 
 ```
-produce: bell pepper, onion, garlic, tomato
-dairy: milk, cheese, butter, yogurt
-meat: chicken, beef, pork
+# Map items to zones in the order you encounter them in your store
+zone1: lettuce, spinach, herbs
+zone2: bell pepper, onion, garlic, tomato
+zone3: chicken, beef, pork
+zone4: milk, cheese, butter
+zone5: bread, rolls
+# ... continue matching your store layout
 ```
+
+**How it works:**
+- Zone numbers can be anything: `zone1`, `zone2`, or `A`, `B`, `Front`, `Back`, etc.
+- Items are sorted by zone order (as listed in file), then alphabetically within each zone
+- Case-insensitive partial matching (e.g., "olive oil" matches "oil")
+- First matching zone wins
+- Unmatched items appear last in an "unzoned" group
+
+**Why zones instead of categories?**
+- Stores don't follow logical category layouts
+- Multiple produce sections? Map them to `zone1` and `zone8`
+- Dairy split across the store? Use `zone4` and `zone12`
+- Flexible to any store layout - number zones in the order you shop
 
 ## API Endpoints
 

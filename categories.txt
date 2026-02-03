@@ -1,21 +1,26 @@
-# Store aisle categories for grouped shopping lists
-# Format: category: pattern1, pattern2, pattern3
+# Store zone mapping for grouped shopping lists
+# Format: zone1: pattern1, pattern2, pattern3
 # Case-insensitive partial matching
-# First matching category wins
-# Unmatched items go to "Other"
+# First matching zone wins
+# Items are sorted by zone order (as listed below), then alphabetically within each zone
+# Unmatched items go to "unzoned" at the end
 
-produce: bell pepper, onion, garlic, tomato, lettuce, carrot, celery, potato, mushroom, spinach, broccoli, cucumber, avocado, lemon, lime, ginger, cilantro, parsley, basil, mint, green onion, scallion, zucchini, squash, cabbage, kale
-dairy: milk, cheese, butter, yogurt, cream, sour cream, egg, cottage cheese, cream cheese
-meat: chicken, beef, pork, ground, sausage, bacon, turkey, lamb, steak, roast
-seafood: salmon, shrimp, fish, tuna, cod, tilapia, crab, lobster, scallop
-frozen: frozen
-bakery: bread, rolls, baguette, tortilla, pita, croissant, muffin
-canned: canned, can of, diced tomato, tomato paste, tomato sauce, coconut milk, beans
-pasta: pasta, spaghetti, noodle, linguine, penne, fettuccine, macaroni, lasagna
-rice: rice, quinoa, couscous, bulgur
-condiments: ketchup, mustard, mayo, mayonnaise, sauce, vinegar, soy sauce, hot sauce, salsa
-oils: olive oil, vegetable oil, coconut oil, sesame oil
-spices: salt, pepper, cumin, paprika, oregano, basil, thyme, cinnamon, nutmeg, cayenne, chili powder, curry
-baking: flour, sugar, baking powder, baking soda, vanilla, chocolate chip, cocoa
-beverages: juice, soda, water, coffee, tea, wine, beer
-snacks: chips, crackers, nuts, popcorn
+# Example zone configuration - customize to match your store's layout
+# Zone numbers/names can be anything: zone1, zone2, A, B, Front, Back, etc.
+
+zone1: lettuce, spinach, kale, herbs, cilantro, parsley, basil, mint, green onion, scallion
+zone2: bell pepper, onion, garlic, tomato, carrot, celery, potato, mushroom, broccoli, cucumber, avocado, lemon, lime, ginger, zucchini, squash, cabbage
+zone3: chicken, beef, pork, ground, sausage, bacon, turkey, lamb, steak, roast
+zone4: salmon, shrimp, fish, tuna, cod, tilapia, crab, lobster, scallop
+zone5: milk, cheese, butter, yogurt, cream, sour cream, egg, cottage cheese, cream cheese
+zone6: bread, rolls, baguette, tortilla, pita, croissant, muffin
+zone7: frozen
+zone8: pasta, spaghetti, noodle, linguine, penne, fettuccine, macaroni, lasagna, rice, quinoa, couscous, bulgur
+zone9: canned, can of, diced tomato, tomato paste, tomato sauce, coconut milk, beans
+zone10: flour, sugar, baking powder, baking soda, vanilla, chocolate chip, cocoa
+zone11: olive oil, vegetable oil, coconut oil, sesame oil
+zone12: ketchup, mustard, mayo, mayonnaise, sauce, vinegar, soy sauce, hot sauce, salsa
+zone13: salt, pepper, cumin, paprika, oregano, thyme, cinnamon, nutmeg, cayenne, chili powder, curry
+zone14: juice, soda, water, coffee, tea, wine, beer
+zone15: chips, crackers, nuts, popcorn
+
