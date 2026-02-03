@@ -1,3 +1,8 @@
+---
+category: pasta
+tags: [quick, italian, comfort-food]
+---
+
 # Pasta Carbonara
 
 Servings: 4

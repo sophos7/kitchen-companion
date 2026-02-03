@@ -1,3 +1,8 @@
+---
+category: pasta
+tags: [quick, vegetarian, italian]
+---
+
 # Recipe Name
 
 Servings: 4
@@ -25,3 +30,5 @@ Servings: 4
 - Substitution suggestions
 - Timer syntax: Use [timer:15m] or [15m] for explicit timers
 - Timers also auto-detect phrases like "cook for 15 minutes"
+- Categories: salmon, white fish, prawn, bowls, pasta, stews, soups, mexican, salads
+- Tags: Use any descriptive tags (e.g., quick, healthy, spicy, vegetarian)

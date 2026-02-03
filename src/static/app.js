@@ -9,6 +9,9 @@ let currentRecipeHtml = '';
 let currentRecipeId = null;
 let touchStartX = 0;
 let touchEndX = 0;
+let searchQuery = '';
+let activeFilters = new Set();
+let shoppingSearchQuery = '';
 
 // Font size levels
 const FONT_SIZES = ['font-sm', 'font-md', 'font-lg', 'font-xl'];
@@ -249,6 +252,8 @@ const views = {
 
 // DOM Elements - Home
 const recipeGrid = document.getElementById('recipe-grid');
+const searchInput = document.getElementById('search-input');
+const filterChips = document.getElementById('filter-chips');
 const shoppingBtn = document.getElementById('shopping-btn');
 const newRecipeBtn = document.getElementById('new-recipe-btn');
 const refreshBtn = document.getElementById('refresh-btn');
@@ -285,6 +290,7 @@ const cancelTimerBtn = document.getElementById('cancel-timer-btn');
 const shoppingBackBtn = document.getElementById('shopping-back-btn');
 const shoppingRefreshBtn = document.getElementById('shopping-refresh-btn');
 const shoppingTitle = document.getElementById('shopping-title');
+const shoppingSearchInput = document.getElementById('shopping-search-input');
 const recipeStep = document.getElementById('recipe-step');
 const additionalStep = document.getElementById('additional-step');
 const resultStep = document.getElementById('result-step');
@@ -392,24 +398,123 @@ function hideError() {
 
 // ============ Home View ============
 
+function getFilteredRecipes() {
+    let filtered = recipes;
+    
+    // Apply search filter
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(r => {
+            const nameMatch = r.name.toLowerCase().includes(query);
+            const categoryMatch = r.category && r.category.toLowerCase().includes(query);
+            const tagsMatch = r.tags && r.tags.toLowerCase().includes(query);
+            return nameMatch || categoryMatch || tagsMatch;
+        });
+    }
+    
+    // Apply category/tag filters
+    if (activeFilters.size > 0) {
+        filtered = filtered.filter(r => {
+            const recipeTags = r.tags ? r.tags.split(',').map(t => t.trim()) : [];
+            const recipeCategories = r.category ? [r.category] : [];
+            const allFilters = [...recipeTags, ...recipeCategories];
+            return [...activeFilters].every(filter => allFilters.includes(filter));
+        });
+    }
+    
+    return filtered;
+}
+
+function getAllCategoriesAndTags() {
+    const categories = new Set();
+    const tags = new Set();
+    
+    recipes.forEach(r => {
+        if (r.category) categories.add(r.category);
+        if (r.tags) {
+            r.tags.split(',').forEach(tag => tags.add(tag.trim()));
+        }
+    });
+    
+    return {
+        categories: Array.from(categories).sort(),
+        tags: Array.from(tags).sort()
+    };
+}
+
+function renderFilterChips() {
+    const { categories, tags } = getAllCategoriesAndTags();
+    const allFilters = [...categories, ...tags];
+    
+    if (allFilters.length === 0) {
+        filterChips.innerHTML = '';
+        return;
+    }
+    
+    filterChips.innerHTML = allFilters.map(filter => {
+        const count = recipes.filter(r => {
+            const recipeTags = r.tags ? r.tags.split(',').map(t => t.trim()) : [];
+            const recipeCategories = r.category ? [r.category] : [];
+            return [...recipeTags, ...recipeCategories].includes(filter);
+        }).length;
+        
+        const isActive = activeFilters.has(filter);
+        return `
+            <button class="filter-chip ${isActive ? 'active' : ''}" data-filter="${filter}">
+                ${filter} <span class="count">(${count})</span>
+            </button>
+        `;
+    }).join('');
+    
+    // Add click handlers
+    filterChips.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => toggleFilter(chip.dataset.filter));
+    });
+}
+
+function toggleFilter(filter) {
+    if (activeFilters.has(filter)) {
+        activeFilters.delete(filter);
+    } else {
+        activeFilters.add(filter);
+    }
+    renderFilterChips();
+    renderRecipeGrid();
+}
+
+function handleSearch(e) {
+    searchQuery = e.target.value;
+    renderRecipeGrid();
+}
+
 function renderRecipeGrid() {
-    if (recipes.length === 0) {
-        recipeGrid.innerHTML = '<p class="placeholder">No recipes found. Add recipes to get started.</p>';
+    const filtered = getFilteredRecipes();
+    
+    if (filtered.length === 0) {
+        if (searchQuery || activeFilters.size > 0) {
+            recipeGrid.innerHTML = '<p class="placeholder">No recipes match your search.</p>';
+        } else {
+            recipeGrid.innerHTML = '<p class="placeholder">No recipes found. Add recipes to get started.</p>';
+        }
         return;
     }
 
     // Check for any errors
-    const errorRecipes = recipes.filter(r => r.has_error);
+    const errorRecipes = filtered.filter(r => r.has_error);
     if (errorRecipes.length > 0) {
         showError(`${errorRecipes.length} recipe(s) have parsing errors.`);
     }
 
-    recipeGrid.innerHTML = recipes.map(recipe => `
-        <div class="recipe-card ${recipe.has_error ? 'has-error' : ''}" data-id="${recipe.id}">
-            <h3>${recipe.name}</h3>
-            <p class="servings">Serves ${recipe.servings}</p>
-        </div>
-    `).join('');
+    recipeGrid.innerHTML = filtered.map(recipe => {
+        const categoryBadge = recipe.category ? `<span class="category-badge">${recipe.category}</span>` : '';
+        return `
+            <div class="recipe-card ${recipe.has_error ? 'has-error' : ''}" data-id="${recipe.id}">
+                <h3>${recipe.name}</h3>
+                <p class="servings">Serves ${recipe.servings}</p>
+                ${categoryBadge}
+            </div>
+        `;
+    }).join('');
 
     // Add click handlers
     recipeGrid.querySelectorAll('.recipe-card').forEach(card => {
@@ -790,12 +895,29 @@ function showShoppingStep(step) {
 }
 
 function renderRecipeList() {
-    if (recipes.length === 0) {
-        recipeList.innerHTML = '<p class="placeholder">No recipes found.</p>';
+    let filtered = recipes;
+    
+    // Apply search filter
+    if (shoppingSearchQuery) {
+        const query = shoppingSearchQuery.toLowerCase();
+        filtered = filtered.filter(r => {
+            const nameMatch = r.name.toLowerCase().includes(query);
+            const categoryMatch = r.category && r.category.toLowerCase().includes(query);
+            const tagsMatch = r.tags && r.tags.toLowerCase().includes(query);
+            return nameMatch || categoryMatch || tagsMatch;
+        });
+    }
+    
+    if (filtered.length === 0) {
+        if (shoppingSearchQuery) {
+            recipeList.innerHTML = '<p class="placeholder">No recipes match your search.</p>';
+        } else {
+            recipeList.innerHTML = '<p class="placeholder">No recipes found.</p>';
+        }
         return;
     }
 
-    recipeList.innerHTML = recipes.map(recipe => {
+    recipeList.innerHTML = filtered.map(recipe => {
         const servingsOptions = SERVINGS_OPTIONS.map(s =>
             `<option value="${s}" ${s === recipe.servings ? 'selected' : ''}>${s}</option>`
         ).join('');
@@ -811,6 +933,11 @@ function renderRecipeList() {
             </div>
         `;
     }).join('');
+}
+
+function handleShoppingSearch(e) {
+    shoppingSearchQuery = e.target.value;
+    renderRecipeList();
 }
 
 function renderShoppingList(data) {
@@ -1049,6 +1176,7 @@ async function handleSaveRecipe() {
         // Refresh recipes
         await refreshRecipesApi();
         recipes = await fetchRecipes();
+        renderFilterChips();
         renderRecipeGrid();
         renderRecipeList();
 
@@ -1076,6 +1204,7 @@ async function handleRefresh() {
     try {
         await refreshRecipesApi();
         recipes = await fetchRecipes();
+        renderFilterChips();
         renderRecipeGrid();
         renderRecipeList();
         hideError();
@@ -1099,6 +1228,7 @@ function setupAutoRefresh() {
                 try {
                     recipes = await fetchRecipes();
                     additionalItems = await fetchAdditionalItems();
+                    renderFilterChips();
                     renderRecipeGrid();
                     renderRecipeList();
                     renderAdditionalItems();
@@ -1137,6 +1267,7 @@ async function init() {
     try {
         recipes = await fetchRecipes();
         additionalItems = await fetchAdditionalItems();
+        renderFilterChips();
         renderRecipeGrid();
         renderRecipeList();
         renderAdditionalItems();
@@ -1148,6 +1279,7 @@ async function init() {
     setupAutoRefresh();
 
     // Home view events
+    searchInput.addEventListener('input', handleSearch);
     shoppingBtn.addEventListener('click', () => {
         showView('shopping');
         showShoppingStep(1);
@@ -1184,6 +1316,7 @@ async function init() {
     // Shopping view events
     shoppingBackBtn.addEventListener('click', goHome);
     shoppingRefreshBtn.addEventListener('click', handleRefresh);
+    shoppingSearchInput.addEventListener('input', handleShoppingSearch);
     selectAllBtn.addEventListener('click', handleSelectAll);
     clearAllBtn.addEventListener('click', handleClearAll);
     nextToAdditionalBtn.addEventListener('click', () => showShoppingStep(2));

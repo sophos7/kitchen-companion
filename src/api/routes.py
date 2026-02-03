@@ -44,6 +44,8 @@ class RecipeResponse(BaseModel):
     servings: int
     has_error: bool
     error_message: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[str] = None  # Comma-separated string
 
 
 class RecipeDetailResponse(BaseModel):
@@ -116,6 +118,8 @@ async def list_recipes():
             servings=r.servings,
             has_error=r.parse_error is not None,
             error_message=r.parse_error,
+            category=r.category,
+            tags=r.tags,
         )
         for r in recipes
     ]

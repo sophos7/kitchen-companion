@@ -21,6 +21,8 @@ class Recipe:
     raw_content: str
     parsed_at: float
     parse_error: Optional[str]
+    category: Optional[str] = None
+    tags: Optional[str] = None  # Stored as comma-separated string
 
 
 @dataclass
@@ -58,7 +60,9 @@ def init_db() -> None:
             file_modified REAL NOT NULL,
             raw_content TEXT NOT NULL,
             parsed_at REAL NOT NULL,
-            parse_error TEXT
+            parse_error TEXT,
+            category TEXT,
+            tags TEXT
         )
     """)
 
@@ -79,6 +83,17 @@ def init_db() -> None:
         CREATE INDEX IF NOT EXISTS idx_ingredients_recipe_id
         ON ingredients (recipe_id)
     """)
+    
+    # Add category and tags columns if they don't exist (migration)
+    try:
+        cursor.execute("ALTER TABLE recipes ADD COLUMN category TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+    
+    try:
+        cursor.execute("ALTER TABLE recipes ADD COLUMN tags TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
 
     conn.commit()
     conn.close()
@@ -120,15 +135,17 @@ def upsert_recipe(recipe: Recipe) -> int:
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO recipes (filename, name, servings, file_modified, raw_content, parsed_at, parse_error)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO recipes (filename, name, servings, file_modified, raw_content, parsed_at, parse_error, category, tags)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(filename) DO UPDATE SET
             name = excluded.name,
             servings = excluded.servings,
             file_modified = excluded.file_modified,
             raw_content = excluded.raw_content,
             parsed_at = excluded.parsed_at,
-            parse_error = excluded.parse_error
+            parse_error = excluded.parse_error,
+            category = excluded.category,
+            tags = excluded.tags
     """, (
         recipe.filename,
         recipe.name,
@@ -137,6 +154,8 @@ def upsert_recipe(recipe: Recipe) -> int:
         recipe.raw_content,
         recipe.parsed_at,
         recipe.parse_error,
+        recipe.category,
+        recipe.tags,
     ))
 
     cursor.execute("SELECT id FROM recipes WHERE filename = ?", (recipe.filename,))

@@ -2,6 +2,7 @@
 
 import os
 import time
+import frontmatter
 
 from src.models.database import (
     Recipe,
@@ -67,8 +68,17 @@ def scan_recipes() -> dict:
         # Read and parse
         with open(filepath, encoding="utf-8") as f:
             content = f.read()
-
-        parsed = parse_recipe(filename, content)
+        
+        # Parse frontmatter
+        post = frontmatter.loads(content)
+        category = post.get('category')
+        tags = post.get('tags', [])
+        
+        # Convert tags list to comma-separated string
+        tags_str = ','.join(tags) if isinstance(tags, list) else tags if tags else None
+        
+        # Parse recipe content (without frontmatter)
+        parsed = parse_recipe(filename, post.content)
 
         # Create recipe record
         recipe = Recipe(
@@ -80,6 +90,8 @@ def scan_recipes() -> dict:
             raw_content=content,
             parsed_at=time.time(),
             parse_error=parsed.error,
+            category=category,
+            tags=tags_str,
         )
 
         recipe_id = upsert_recipe(recipe)

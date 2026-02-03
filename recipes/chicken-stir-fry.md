@@ -1,3 +1,8 @@
+---
+category: bowls
+tags: [quick, asian, healthy]
+---
+
 # Chicken Stir Fry
 
 Servings: 4
