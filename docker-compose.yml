@@ -1,0 +1,15 @@
+services:
+  kitchen-companion:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./recipes:/app/recipes
+      - ./data:/app/data
+      - ./pantry.txt:/app/pantry.txt:ro
+      - ./categories.txt:/app/categories.txt:ro
+    environment:
+      - RECIPES_PATH=/app/recipes
+      - DATA_PATH=/app/data
+      - PANTRY_PATH=/app/pantry.txt
+      - CATEGORIES_PATH=/app/categories.txt

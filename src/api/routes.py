@@ -1,0 +1,241 @@
+"""FastAPI routes for Kitchen Companion."""
+
+import os
+import re
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from src.models.database import (
+    get_all_recipes,
+    get_recipe_by_id,
+    get_ingredients_for_recipes,
+)
+from src.services.scanner import scan_recipes, RECIPES_PATH
+from src.services.combiner import combine_ingredients
+from src.services.pantry import filter_pantry_items, reload_pantry
+from src.services.categories import reload_categories
+from src.services.exporter import recipe_to_html, shopping_list_to_text, inject_timer_buttons
+
+router = APIRouter()
+
+
+class RecipeResponse(BaseModel):
+    """Recipe data for API response."""
+
+    id: int
+    name: str
+    servings: int
+    has_error: bool
+    error_message: Optional[str] = None
+
+
+class RecipeDetailResponse(BaseModel):
+    """Full recipe detail for viewing."""
+
+    id: int
+    name: str
+    servings: int
+    raw_content: str
+    html_content: str
+    timers: list[dict]
+    has_error: bool
+    error_message: Optional[str] = None
+
+
+class RecipeSelection(BaseModel):
+    """Recipe selection with target servings."""
+
+    recipe_id: int
+    target_servings: int
+
+
+class ShoppingListRequest(BaseModel):
+    """Request body for generating shopping list."""
+
+    selections: list[RecipeSelection]
+    include_pantry: list[str] = []
+
+
+class ShoppingListResponse(BaseModel):
+    """Shopping list response."""
+
+    shopping_items: list[dict]
+    pantry_items: list[str]
+    formatted_text: str
+
+
+class ScanResponse(BaseModel):
+    """Response from recipe scan."""
+
+    added: list[str]
+    updated: list[str]
+    deleted: list[str]
+    errors: list[str]
+
+
+class UploadRecipeRequest(BaseModel):
+    """Request body for uploading a new recipe."""
+
+    filename: str
+    content: str
+
+
+class UploadRecipeResponse(BaseModel):
+    """Response from recipe upload."""
+
+    filename: str
+    message: str
+
+
+@router.get("/recipes", response_model=list[RecipeResponse])
+async def list_recipes():
+    """Get all recipes."""
+    recipes = get_all_recipes()
+    return [
+        RecipeResponse(
+            id=r.id,
+            name=r.name,
+            servings=r.servings,
+            has_error=r.parse_error is not None,
+            error_message=r.parse_error,
+        )
+        for r in recipes
+    ]
+
+
+@router.get("/recipes/{recipe_id}", response_model=RecipeDetailResponse)
+async def get_recipe(recipe_id: int):
+    """Get recipe details including HTML for email and timer metadata."""
+    recipe = get_recipe_by_id(recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    # Process content for timers
+    content_with_timers, detected_timers = inject_timer_buttons(recipe.raw_content)
+
+    # Convert to HTML
+    html_content = recipe_to_html(recipe.raw_content)
+
+    return RecipeDetailResponse(
+        id=recipe.id,
+        name=recipe.name,
+        servings=recipe.servings,
+        raw_content=recipe.raw_content,
+        html_content=html_content,
+        timers=detected_timers,
+        has_error=recipe.parse_error is not None,
+        error_message=recipe.parse_error,
+    )
+
+
+@router.post("/shopping-list", response_model=ShoppingListResponse)
+async def generate_shopping_list(request: ShoppingListRequest):
+    """Generate combined shopping list from selected recipes."""
+    if not request.selections:
+        return ShoppingListResponse(
+            shopping_items=[],
+            pantry_items=[],
+            formatted_text="",
+        )
+
+    # Get recipe info for servings calculation
+    recipe_ids = [s.recipe_id for s in request.selections]
+    recipes = {r.id: r for r in get_all_recipes() if r.id in recipe_ids}
+
+    # Calculate multipliers
+    multipliers = {}
+    for sel in request.selections:
+        recipe = recipes.get(sel.recipe_id)
+        if recipe:
+            multipliers[sel.recipe_id] = sel.target_servings / recipe.servings
+
+    # Get ingredients
+    ingredients = get_ingredients_for_recipes(recipe_ids)
+    ingredient_dicts = [
+        {
+            "recipe_id": i.recipe_id,
+            "quantity": i.quantity,
+            "unit": i.unit,
+            "name": i.name,
+        }
+        for i in ingredients
+    ]
+
+    # Combine ingredients
+    combined = combine_ingredients(ingredient_dicts, multipliers)
+
+    # Filter pantry items
+    shopping_items, pantry_items = filter_pantry_items(combined)
+
+    # Format text output
+    formatted_text = shopping_list_to_text(shopping_items, request.include_pantry)
+
+    return ShoppingListResponse(
+        shopping_items=shopping_items,
+        pantry_items=pantry_items,
+        formatted_text=formatted_text,
+    )
+
+
+@router.post("/refresh", response_model=ScanResponse)
+async def refresh_recipes():
+    """Rescan recipes folder and update database."""
+    reload_pantry()
+    reload_categories()
+    results = scan_recipes()
+    return ScanResponse(**results)
+
+
+@router.post("/recipes/upload", response_model=UploadRecipeResponse)
+async def upload_recipe(request: UploadRecipeRequest):
+    """Upload a new recipe to the recipes folder."""
+    filename = request.filename.strip()
+    content = request.content
+
+    # Validate filename
+    if not filename:
+        raise HTTPException(status_code=400, detail="Filename is required")
+
+    # Ensure .md extension
+    if not filename.endswith('.md'):
+        filename += '.md'
+
+    # Sanitize filename (allow only alphanumeric, dash, underscore)
+    safe_filename = re.sub(r'[^a-zA-Z0-9\-_.]', '-', filename)
+    if safe_filename.startswith('00-'):
+        raise HTTPException(
+            status_code=400,
+            detail="Filename cannot start with '00-' (reserved for templates)"
+        )
+
+    # Validate content has ingredients section
+    if '## ingredients' not in content.lower():
+        raise HTTPException(
+            status_code=400,
+            detail="Recipe must have an '## Ingredients' section"
+        )
+
+    # Check if file already exists
+    filepath = os.path.join(RECIPES_PATH, safe_filename)
+    if os.path.exists(filepath):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Recipe '{safe_filename}' already exists"
+        )
+
+    # Write file
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+    except OSError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save recipe: {e}"
+        )
+
+    return UploadRecipeResponse(
+        filename=safe_filename,
+        message=f"Recipe '{safe_filename}' saved successfully"
+    )

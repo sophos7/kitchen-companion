@@ -1,0 +1,23 @@
+# Pantry staples - items you usually have on hand
+# One item per line, case-insensitive partial matching
+# Lines starting with # are comments
+
+salt
+pepper
+olive oil
+vegetable oil
+garlic
+onion
+butter
+flour
+sugar
+baking powder
+baking soda
+vanilla extract
+cinnamon
+paprika
+cumin
+oregano
+basil
+thyme
+bay leaf

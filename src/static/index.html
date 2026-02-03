@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kitchen Companion</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Home View -->
+        <div id="home-view" class="view active">
+            <header class="header">
+                <h1>Kitchen Companion</h1>
+                <div class="header-actions">
+                    <button id="shopping-btn" class="btn btn-primary">Shopping List</button>
+                    <button id="new-recipe-btn" class="btn btn-secondary">New Recipe</button>
+                    <button id="refresh-btn" class="btn btn-icon" title="Refresh Recipes">&#8635;</button>
+                </div>
+            </header>
+            <div id="error-banner" class="error-banner hidden">
+                <span id="error-text"></span>
+                <button id="error-close" class="btn-close">&times;</button>
+            </div>
+            <main class="home-content">
+                <div id="recipe-grid" class="recipe-grid">
+                    <p class="loading">Loading recipes...</p>
+                </div>
+            </main>
+        </div>
+
+        <!-- Cooking View -->
+        <div id="cooking-view" class="view">
+            <header id="cooking-header" class="header cooking-header">
+                <button id="cooking-back-btn" class="btn btn-icon">&larr;</button>
+                <h1 id="cooking-title">Recipe</h1>
+                <div class="cooking-controls">
+                    <button id="cooking-copy-btn" class="btn btn-icon" title="Copy for Email">&#10064;</button>
+                    <button id="font-decrease" class="btn btn-icon">A-</button>
+                    <button id="font-increase" class="btn btn-icon">A+</button>
+                </div>
+            </header>
+            <main id="cooking-content" class="cooking-content font-md">
+                <!-- Recipe content loaded here -->
+            </main>
+
+            <!-- Timer Panel -->
+            <div id="timer-panel" class="timer-panel collapsed hidden">
+                <div class="timer-panel-header" id="timer-panel-toggle">
+                    <span id="timer-panel-title">Timers (0)</span>
+                    <button class="btn-icon timer-toggle-icon">&#9660;</button>
+                </div>
+                <div class="timer-panel-content">
+                    <div id="active-timers" class="active-timers">
+                        <!-- Dynamic timer items -->
+                    </div>
+                    <button id="add-custom-timer" class="btn btn-small">+ Custom Timer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Timer Modal -->
+        <div id="custom-timer-modal" class="modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <h2>Add Custom Timer</h2>
+                <div class="timer-inputs">
+                    <div class="timer-input-group">
+                        <label for="timer-hours">Hours</label>
+                        <input type="number" id="timer-hours" class="input" placeholder="0" min="0" max="23" value="0">
+                    </div>
+                    <div class="timer-input-group">
+                        <label for="timer-minutes">Minutes</label>
+                        <input type="number" id="timer-minutes" class="input" placeholder="0" min="0" max="59" value="0">
+                    </div>
+                    <div class="timer-input-group">
+                        <label for="timer-seconds">Seconds</label>
+                        <input type="number" id="timer-seconds" class="input" placeholder="0" min="0" max="59" value="0">
+                    </div>
+                </div>
+                <div class="timer-label-group">
+                    <label for="timer-custom-label">Label (optional)</label>
+                    <input type="text" id="timer-custom-label" class="input" placeholder="e.g., Boil eggs">
+                </div>
+                <div class="modal-actions">
+                    <button id="create-timer-btn" class="btn btn-primary">Create Timer</button>
+                    <button id="cancel-timer-btn" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping List View -->
+        <div id="shopping-view" class="view">
+            <header class="header">
+                <button id="shopping-back-btn" class="btn btn-icon">&larr;</button>
+                <h1>Shopping List</h1>
+                <button id="shopping-refresh-btn" class="btn btn-icon" title="Refresh">&#8635;</button>
+            </header>
+            <main class="shopping-content">
+                <section class="panel recipe-panel">
+                    <h2>Select Recipes</h2>
+                    <div class="recipe-actions">
+                        <button id="select-all-btn" class="btn btn-small">Select All</button>
+                        <button id="clear-all-btn" class="btn btn-small">Clear All</button>
+                    </div>
+                    <div id="recipe-list" class="recipe-list">
+                        <p class="loading">Loading recipes...</p>
+                    </div>
+                    <button id="generate-btn" class="btn btn-primary">Generate Shopping List</button>
+                </section>
+
+                <section class="panel output-panel">
+                    <h2>Shopping List</h2>
+                    <div id="shopping-list" class="shopping-list">
+                        <p class="placeholder">Select recipes and click Generate</p>
+                    </div>
+
+                    <div id="pantry-section" class="pantry-section hidden">
+                        <h3>Pantry Items <span class="hint">(check to add)</span></h3>
+                        <div id="pantry-list" class="pantry-list"></div>
+                    </div>
+
+                    <div class="output-actions">
+                        <button id="copy-btn" class="btn btn-primary" disabled>Copy to Clipboard</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Upload View -->
+        <div id="upload-view" class="view">
+            <header class="header">
+                <button id="upload-back-btn" class="btn btn-icon">&larr;</button>
+                <h1>New Recipe</h1>
+            </header>
+            <main class="upload-content">
+                <div id="drop-zone" class="drop-zone">
+                    <p>Drag and drop a .md file here</p>
+                    <p class="hint">or</p>
+                    <input type="file" id="file-input" accept=".md" hidden>
+                    <button id="browse-btn" class="btn btn-secondary">Browse Files</button>
+                </div>
+
+                <div class="divider">
+                    <span>OR paste markdown below</span>
+                </div>
+
+                <div class="paste-section">
+                    <input type="text" id="recipe-filename" class="input" placeholder="Filename (e.g., chicken-stir-fry.md)">
+                    <textarea id="recipe-content" class="textarea" placeholder="Paste recipe markdown here...
+
+# Recipe Name
+
+Servings: 4
+
+## Ingredients
+
+- 500g ingredient
+- 2 tbsp another ingredient
+
+## Instructions
+
+1. Step one
+2. Step two"></textarea>
+                    <div id="upload-error" class="upload-error hidden"></div>
+                    <button id="save-recipe-btn" class="btn btn-primary" disabled>Save Recipe</button>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
