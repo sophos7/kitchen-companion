@@ -176,6 +176,54 @@ The application hot-reloads when files change. Recipe files are **automatically 
 
 No restart or manual refresh required.
 
+## Zone Management CLI
+
+Use the `zones.py` CLI tool to maintain your zone configuration:
+
+### Analyze Unzoned Items
+
+```bash
+python zones.py
+```
+
+**Output:**
+- Zone distribution (how many ingredients in each zone)
+- List of unzoned items sorted by frequency
+- Coverage percentage
+- Suggestions for which items to add to zones
+
+**Example output:**
+```
+📊 Zone Distribution:
+------------------------------------------------------------
+  zone1                  12 ingredients
+  zone2                  45 ingredients
+  zone3                  23 ingredients
+  ...
+  Unzoned                 8 (5.2%)
+
+⚠️  Unzoned Items (add these to categories.txt):
+------------------------------------------------------------
+  • paprika                                  (in 5 recipes)
+  • cumin                                    (in 3 recipes)
+  • bay leaves                               (in 2 recipes)
+```
+
+### Show Current Zones
+
+```bash
+python zones.py --show-zones
+```
+
+Shows all configured zones and their pattern lists.
+
+### Workflow
+
+1. Add new recipes
+2. Run `python zones.py` to see unzoned ingredients
+3. Edit `categories.txt` to add missing items to appropriate zones
+4. Repeat as needed
+
 ## License
 
 MIT
