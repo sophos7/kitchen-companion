@@ -1279,7 +1279,7 @@ async function init() {
                 trackUserInteractions: true,
                 trackResources: true,
                 trackLongTasks: true,
-                defaultPrivacyLevel: 'mask-user-input'
+                defaultPrivacyLevel: 'allow'
             });
             console.log('Datadog RUM initialized');
         }
