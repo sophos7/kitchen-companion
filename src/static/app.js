@@ -477,7 +477,8 @@ async function openCookingView(id) {
         // Reset scroll position and show header
         cookingContent.scrollTop = 0;
         lastScrollTop = 0;
-        cookingHeader.classList.remove('hidden');
+        headerOffset = 0;
+        cookingHeader.style.transform = 'translateY(0)';
 
         showView('cooking');
     } catch (err) {
@@ -487,30 +488,32 @@ async function openCookingView(id) {
 
 // Scroll detection for cooking view header
 let lastScrollTop = 0;
+let headerOffset = 0;
+const HEADER_HEIGHT = 90; // Header height in pixels (including padding and border)
+const SHOW_HEADER_THRESHOLD = 150; // Only show header when within this many pixels from top
 
 function handleCookingScroll() {
     const currentScroll = cookingContent.scrollTop;
     const scrollDiff = currentScroll - lastScrollTop;
 
     // Ignore very small scroll movements
-    if (Math.abs(scrollDiff) < 5) {
+    if (Math.abs(scrollDiff) < 2) {
         return;
     }
 
-    // Check if we're near the bottom (within 10px)
-    const isNearBottom = (cookingContent.scrollHeight - cookingContent.scrollTop - cookingContent.clientHeight) < 10;
-
+    // Update header offset based on scroll direction
     if (scrollDiff > 0) {
-        // Scrolling down - hide header after scrolling past 50px
-        if (currentScroll > 50) {
-            cookingHeader.classList.add('hidden');
-        }
+        // Scrolling down - move header up
+        headerOffset = Math.min(HEADER_HEIGHT, headerOffset + scrollDiff);
     } else {
-        // Scrolling up - show header, but not if we're bouncing at the bottom
-        if (!isNearBottom) {
-            cookingHeader.classList.remove('hidden');
+        // Scrolling up - only bring header back if we're near the top
+        if (currentScroll < SHOW_HEADER_THRESHOLD) {
+            headerOffset = Math.max(0, headerOffset + scrollDiff);
         }
     }
+
+    // Apply the transform
+    cookingHeader.style.transform = `translateY(-${headerOffset}px)`;
 
     lastScrollTop = currentScroll;
 }
