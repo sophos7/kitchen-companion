@@ -155,38 +155,43 @@ async def get_recipe(recipe_id: int):
 @router.post("/shopping-list", response_model=ShoppingListResponse)
 async def generate_shopping_list(request: ShoppingListRequest):
     """Generate combined shopping list from selected recipes."""
-    if not request.selections:
+    # Check if we have any selections at all
+    if not request.selections and not request.additional_items:
         return ShoppingListResponse(
             shopping_items=[],
             pantry_items=[],
             formatted_text="",
         )
 
-    # Get recipe info for servings calculation
-    recipe_ids = [s.recipe_id for s in request.selections]
-    recipes = {r.id: r for r in get_all_recipes() if r.id in recipe_ids}
+    combined = []
+    
+    # Process recipe ingredients if any recipes selected
+    if request.selections:
+        # Get recipe info for servings calculation
+        recipe_ids = [s.recipe_id for s in request.selections]
+        recipes = {r.id: r for r in get_all_recipes() if r.id in recipe_ids}
 
-    # Calculate multipliers
-    multipliers = {}
-    for sel in request.selections:
-        recipe = recipes.get(sel.recipe_id)
-        if recipe:
-            multipliers[sel.recipe_id] = sel.target_servings / recipe.servings
+        # Calculate multipliers
+        multipliers = {}
+        for sel in request.selections:
+            recipe = recipes.get(sel.recipe_id)
+            if recipe:
+                multipliers[sel.recipe_id] = sel.target_servings / recipe.servings
 
-    # Get ingredients
-    ingredients = get_ingredients_for_recipes(recipe_ids)
-    ingredient_dicts = [
-        {
-            "recipe_id": i.recipe_id,
-            "quantity": i.quantity,
-            "unit": i.unit,
-            "name": i.name,
-        }
-        for i in ingredients
-    ]
+        # Get ingredients
+        ingredients = get_ingredients_for_recipes(recipe_ids)
+        ingredient_dicts = [
+            {
+                "recipe_id": i.recipe_id,
+                "quantity": i.quantity,
+                "unit": i.unit,
+                "name": i.name,
+            }
+            for i in ingredients
+        ]
 
-    # Combine ingredients
-    combined = combine_ingredients(ingredient_dicts, multipliers)
+        # Combine ingredients
+        combined = combine_ingredients(ingredient_dicts, multipliers)
 
     # Filter pantry items
     shopping_items, pantry_items = filter_pantry_items(combined)

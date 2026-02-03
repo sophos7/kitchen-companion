@@ -93,41 +93,58 @@
         <div id="shopping-view" class="view">
             <header class="header">
                 <button id="shopping-back-btn" class="btn btn-icon">&larr;</button>
-                <h1>Shopping List</h1>
+                <h1 id="shopping-title">Select Recipes</h1>
                 <button id="shopping-refresh-btn" class="btn btn-icon" title="Refresh">&#8635;</button>
             </header>
             <main class="shopping-content">
-                <section class="panel recipe-panel">
-                    <h2>Select Recipes</h2>
-                    <div class="recipe-actions">
-                        <button id="select-all-btn" class="btn btn-small">Select All</button>
-                        <button id="clear-all-btn" class="btn btn-small">Clear All</button>
+                <!-- Step 1: Recipe Selection -->
+                <section id="recipe-step" class="shopping-step active">
+                    <div class="step-header">
+                        <h2>Step 1: Select Recipes</h2>
+                        <div class="recipe-actions">
+                            <button id="select-all-btn" class="btn btn-small">Select All</button>
+                            <button id="clear-all-btn" class="btn btn-small">Clear All</button>
+                        </div>
                     </div>
                     <div id="recipe-list" class="recipe-list">
                         <p class="loading">Loading recipes...</p>
                     </div>
-                    
-                    <h3 class="section-heading">Additional Items</h3>
+                    <div class="step-actions">
+                        <button id="next-to-additional-btn" class="btn btn-primary">Next: Additional Items</button>
+                        <button id="skip-to-list-btn" class="btn btn-secondary">Skip to List</button>
+                    </div>
+                </section>
+
+                <!-- Step 2: Additional Items -->
+                <section id="additional-step" class="shopping-step">
+                    <div class="step-header">
+                        <h2>Step 2: Additional Items</h2>
+                        <p class="hint">Non-recipe items like household goods</p>
+                    </div>
                     <div id="additional-items-list" class="additional-items-list">
                         <p class="loading">Loading...</p>
                     </div>
-                    
-                    <button id="generate-btn" class="btn btn-primary">Generate Shopping List</button>
+                    <div class="step-actions">
+                        <button id="back-to-recipes-btn" class="btn btn-secondary">Back to Recipes</button>
+                        <button id="generate-list-btn" class="btn btn-primary">Generate Shopping List</button>
+                    </div>
                 </section>
 
-                <section class="panel output-panel">
-                    <h2>Shopping List</h2>
-                    <div id="shopping-list" class="shopping-list">
-                        <p class="placeholder">Select recipes and click Generate</p>
+                <!-- Step 3: Shopping List Result -->
+                <section id="result-step" class="shopping-step">
+                    <div class="step-header">
+                        <h2>Step 3: Shopping List</h2>
                     </div>
-
+                    <div id="shopping-list" class="shopping-list">
+                        <p class="placeholder">Select recipes and generate list</p>
+                    </div>
                     <div id="pantry-section" class="pantry-section hidden">
                         <h3>Pantry Items <span class="hint">(check to add)</span></h3>
                         <div id="pantry-list" class="pantry-list"></div>
                     </div>
-
-                    <div class="output-actions">
-                        <button id="copy-btn" class="btn btn-primary" disabled>Copy to Clipboard</button>
+                    <div class="step-actions">
+                        <button id="edit-selections-btn" class="btn btn-secondary">Edit Selections</button>
+                        <button id="copy-btn" class="btn btn-primary">Copy to Clipboard</button>
                     </div>
                 </section>
             </main>

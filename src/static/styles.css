@@ -302,6 +302,50 @@ body {
     gap: 1rem;
 }
 
+/* Shopping steps */
+.shopping-step {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+    animation: fadeIn 0.2s ease-in;
+}
+
+.shopping-step.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.step-header {
+    margin-bottom: 1rem;
+}
+
+.step-header h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.step-header .hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.step-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.step-actions button {
+    flex: 1;
+}
+
 .panel {
     background-color: var(--bg-secondary);
     border-radius: 8px;

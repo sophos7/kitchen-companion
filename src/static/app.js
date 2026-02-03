@@ -284,11 +284,19 @@ const cancelTimerBtn = document.getElementById('cancel-timer-btn');
 // DOM Elements - Shopping
 const shoppingBackBtn = document.getElementById('shopping-back-btn');
 const shoppingRefreshBtn = document.getElementById('shopping-refresh-btn');
+const shoppingTitle = document.getElementById('shopping-title');
+const recipeStep = document.getElementById('recipe-step');
+const additionalStep = document.getElementById('additional-step');
+const resultStep = document.getElementById('result-step');
 const recipeList = document.getElementById('recipe-list');
 const additionalItemsList = document.getElementById('additional-items-list');
 const selectAllBtn = document.getElementById('select-all-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
-const generateBtn = document.getElementById('generate-btn');
+const nextToAdditionalBtn = document.getElementById('next-to-additional-btn');
+const skipToListBtn = document.getElementById('skip-to-list-btn');
+const backToRecipesBtn = document.getElementById('back-to-recipes-btn');
+const generateListBtn = document.getElementById('generate-list-btn');
+const editSelectionsBtn = document.getElementById('edit-selections-btn');
 const shoppingList = document.getElementById('shopping-list');
 const pantrySection = document.getElementById('pantry-section');
 const pantryList = document.getElementById('pantry-list');
@@ -755,6 +763,29 @@ function createCustomTimer() {
 
 // ============ Shopping View ============
 
+let currentShoppingStep = 1;
+
+function showShoppingStep(step) {
+    currentShoppingStep = step;
+    
+    // Hide all steps
+    recipeStep.classList.remove('active');
+    additionalStep.classList.remove('active');
+    resultStep.classList.remove('active');
+    
+    // Show current step
+    if (step === 1) {
+        recipeStep.classList.add('active');
+        shoppingTitle.textContent = 'Select Recipes';
+    } else if (step === 2) {
+        additionalStep.classList.add('active');
+        shoppingTitle.textContent = 'Additional Items';
+    } else if (step === 3) {
+        resultStep.classList.add('active');
+        shoppingTitle.textContent = 'Shopping List';
+    }
+}
+
 function renderRecipeList() {
     if (recipes.length === 0) {
         recipeList.innerHTML = '<p class="placeholder">No recipes found.</p>';
@@ -785,7 +816,6 @@ function renderShoppingList(data) {
     if (shopping_items.length === 0 && pantry_items.length === 0) {
         shoppingList.innerHTML = '<p class="placeholder">No items in shopping list</p>';
         pantrySection.classList.add('hidden');
-        copyBtn.disabled = true;
         return;
     }
 
@@ -807,8 +837,6 @@ function renderShoppingList(data) {
     } else {
         pantrySection.classList.add('hidden');
     }
-
-    copyBtn.disabled = false;
 }
 
 function getSelectedRecipes() {
@@ -878,18 +906,19 @@ async function handleGenerate() {
         return;
     }
 
-    generateBtn.disabled = true;
-    generateBtn.textContent = 'Generating...';
+    generateListBtn.disabled = true;
+    generateListBtn.textContent = 'Generating...';
 
     try {
         const data = await generateShoppingListApi(selections, [], additionalItemsSelected);
         renderShoppingList(data);
+        showShoppingStep(3);
         hideError();
     } catch (err) {
         showError('Failed to generate shopping list');
     } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = 'Generate Shopping List';
+        generateListBtn.disabled = false;
+        generateListBtn.textContent = 'Generate Shopping List';
     }
 }
 
@@ -1116,7 +1145,10 @@ async function init() {
     setupAutoRefresh();
 
     // Home view events
-    shoppingBtn.addEventListener('click', () => showView('shopping'));
+    shoppingBtn.addEventListener('click', () => {
+        showView('shopping');
+        showShoppingStep(1);
+    });
     newRecipeBtn.addEventListener('click', () => showView('upload'));
     refreshBtn.addEventListener('click', handleRefresh);
     errorClose.addEventListener('click', hideError);
@@ -1151,7 +1183,11 @@ async function init() {
     shoppingRefreshBtn.addEventListener('click', handleRefresh);
     selectAllBtn.addEventListener('click', handleSelectAll);
     clearAllBtn.addEventListener('click', handleClearAll);
-    generateBtn.addEventListener('click', handleGenerate);
+    nextToAdditionalBtn.addEventListener('click', () => showShoppingStep(2));
+    skipToListBtn.addEventListener('click', handleGenerate);
+    backToRecipesBtn.addEventListener('click', () => showShoppingStep(1));
+    generateListBtn.addEventListener('click', handleGenerate);
+    editSelectionsBtn.addEventListener('click', () => showShoppingStep(1));
     copyBtn.addEventListener('click', handleCopyShoppingList);
 
     // Upload view events
