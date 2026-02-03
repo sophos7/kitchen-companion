@@ -63,5 +63,10 @@ app = FastAPI(
 
 app.include_router(router, prefix="/api")
 
+# Mount node_modules for Datadog RUM bundle
+node_modules_path = os.path.join(os.path.dirname(__file__), "..", "node_modules")
+if os.path.exists(node_modules_path):
+    app.mount("/node_modules", StaticFiles(directory=node_modules_path), name="node_modules")
+
 static_path = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/", StaticFiles(directory=static_path, html=True), name="static")

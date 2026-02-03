@@ -1262,6 +1262,30 @@ function setupAutoRefresh() {
 async function init() {
     // Load font size preference
     loadFontSize();
+    
+    // Fetch config and initialize Datadog RUM if enabled
+    try {
+        const config = await fetch(`${API_BASE}/config`).then(r => r.json());
+        if (config.datadog.enabled && window.datadogRum) {
+            window.datadogRum.init({
+                applicationId: config.datadog.applicationId,
+                clientToken: config.datadog.clientToken,
+                site: 'datadoghq.com',
+                service: config.datadog.service,
+                env: config.datadog.env,
+                version: config.datadog.version,
+                sessionSampleRate: 100,
+                sessionReplaySampleRate: 100,
+                trackUserInteractions: true,
+                trackResources: true,
+                trackLongTasks: true,
+                defaultPrivacyLevel: 'mask-user-input'
+            });
+            console.log('Datadog RUM initialized');
+        }
+    } catch (err) {
+        console.log('Config fetch failed, continuing without Datadog:', err);
+    }
 
     // Load recipes and additional items
     try {

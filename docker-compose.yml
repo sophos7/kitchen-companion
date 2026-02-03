@@ -13,3 +13,8 @@ services:
       - PANTRY_PATH=/app/config/pantry.txt
       - CATEGORIES_PATH=/app/config/categories.txt
       - ADDITIONAL_ITEMS_PATH=/app/config/additional-items.txt
+      - DD_RUM_APP_ID=${DD_RUM_APP_ID}
+      - DD_RUM_CLIENT_TOKEN=${DD_RUM_CLIENT_TOKEN}
+      - DD_RUM_SERVICE=${DD_RUM_SERVICE:-kitchen-companion}
+      - DD_RUM_ENV=${DD_RUM_ENV:-rpi5}
+      - DD_RUM_VERSION=${DD_RUM_VERSION:-1.0.0}

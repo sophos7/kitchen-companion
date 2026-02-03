@@ -131,6 +131,21 @@ async def list_additional_items():
     return {"items": get_additional_items()}
 
 
+@router.get("/config")
+async def get_config():
+    """Get runtime configuration for frontend."""
+    return {
+        "datadog": {
+            "applicationId": os.environ.get("DD_RUM_APP_ID", ""),
+            "clientToken": os.environ.get("DD_RUM_CLIENT_TOKEN", ""),
+            "service": os.environ.get("DD_RUM_SERVICE", "kitchen-companion"),
+            "env": os.environ.get("DD_RUM_ENV", "production"),
+            "version": os.environ.get("DD_RUM_VERSION", "1.0.0"),
+            "enabled": bool(os.environ.get("DD_RUM_APP_ID") and os.environ.get("DD_RUM_CLIENT_TOKEN")),
+        }
+    }
+
+
 @router.get("/recipes/{recipe_id}", response_model=RecipeDetailResponse)
 async def get_recipe(recipe_id: int):
     """Get recipe details including HTML for email and timer metadata."""
