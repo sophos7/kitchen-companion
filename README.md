@@ -119,6 +119,28 @@ garlic
 onion
 ```
 
+### Additional Items (`additional-items.txt`)
+
+Non-recipe items like household goods that you want to add to shopping lists:
+
+```
+dish soap
+paper towels
+trash bags
+baby formula
+diapers
+dog food
+toilet paper
+laundry detergent
+```
+
+**How it works:**
+- Items appear as checkboxes in the shopping list view
+- Check items you need and they'll be added to your shopping list
+- Items are zoned just like recipe ingredients
+- Included in zone analysis CLI tool
+- Use for household items, baby products, pet supplies, etc.
+
 ### Store Zones (`categories.txt`)
 
 Organize shopping lists by your store's actual layout using numbered zones:

@@ -8,8 +8,10 @@ services:
       - ./data:/app/data
       - ./pantry.txt:/app/pantry.txt:ro
       - ./categories.txt:/app/categories.txt:ro
+      - ./additional-items.txt:/app/additional-items.txt:ro
     environment:
       - RECIPES_PATH=/app/recipes
       - DATA_PATH=/app/data
       - PANTRY_PATH=/app/pantry.txt
       - CATEGORIES_PATH=/app/categories.txt
+      - ADDITIONAL_ITEMS_PATH=/app/additional-items.txt

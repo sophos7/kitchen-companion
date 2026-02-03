@@ -1,0 +1,39 @@
+# Additional Items - Non-recipe shopping list items
+# One item per line
+# Blank lines and lines starting with # are ignored
+# These items will appear as checkboxes in the shopping list
+# They are also included in zone analysis
+
+# Household
+dish soap
+paper towels
+trash bags
+aluminum foil
+plastic wrap
+
+# Baby/Kids
+baby formula
+diapers
+wipes
+baby food
+
+# Pet
+dog food
+cat food
+cat litter
+
+# Personal Care
+toothpaste
+shampoo
+soap
+toilet paper
+
+# Cleaning
+laundry detergent
+dish detergent
+all-purpose cleaner
+sponges
+
+# Other
+batteries
+light bulbs

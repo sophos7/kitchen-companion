@@ -4,6 +4,7 @@ const API_BASE = '/api';
 
 // State
 let recipes = [];
+let additionalItems = [];
 let currentRecipeHtml = '';
 let currentRecipeId = null;
 let touchStartX = 0;
@@ -284,6 +285,7 @@ const cancelTimerBtn = document.getElementById('cancel-timer-btn');
 const shoppingBackBtn = document.getElementById('shopping-back-btn');
 const shoppingRefreshBtn = document.getElementById('shopping-refresh-btn');
 const recipeList = document.getElementById('recipe-list');
+const additionalItemsList = document.getElementById('additional-items-list');
 const selectAllBtn = document.getElementById('select-all-btn');
 const clearAllBtn = document.getElementById('clear-all-btn');
 const generateBtn = document.getElementById('generate-btn');
@@ -322,6 +324,13 @@ async function fetchRecipes() {
     const response = await fetch(`${API_BASE}/recipes`);
     if (!response.ok) throw new Error('Failed to fetch recipes');
     return response.json();
+}
+
+async function fetchAdditionalItems() {
+    const response = await fetch(`${API_BASE}/additional-items`);
+    if (!response.ok) throw new Error('Failed to fetch additional items');
+    const data = await response.json();
+    return data.items;
 }
 
 async function fetchRecipeDetail(id) {
@@ -824,10 +833,48 @@ function getSelectedPantryItems() {
     return items;
 }
 
+function getSelectedAdditionalItems() {
+    const items = [];
+    additionalItemsList.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        items.push(cb.value);
+    });
+    return items;
+}
+
+function renderAdditionalItems() {
+    if (additionalItems.length === 0) {
+        additionalItemsList.innerHTML = '<p class="placeholder">No additional items configured</p>';
+        return;
+    }
+
+    additionalItemsList.innerHTML = additionalItems.map(item => `
+        <div class="additional-item">
+            <input type="checkbox" id="add-${item.replace(/\s+/g, '-')}" value="${item}">
+            <label for="add-${item.replace(/\s+/g, '-')}">${item}</label>
+        </div>
+    `).join('');
+}
+
+async function generateShoppingListApi(selections, includePantry, additionalItems = []) {
+    const response = await fetch(`${API_BASE}/shopping-list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            selections,
+            include_pantry: includePantry,
+            additional_items: additionalItems,
+        }),
+    });
+    if (!response.ok) throw new Error('Failed to generate shopping list');
+    return response.json();
+}
+
 async function handleGenerate() {
     const selections = getSelectedRecipes();
-    if (selections.length === 0) {
-        showError('Please select at least one recipe');
+    const additionalItemsSelected = getSelectedAdditionalItems();
+    
+    if (selections.length === 0 && additionalItemsSelected.length === 0) {
+        showError('Please select at least one recipe or additional item');
         return;
     }
 
@@ -835,7 +882,7 @@ async function handleGenerate() {
     generateBtn.textContent = 'Generating...';
 
     try {
-        const data = await generateShoppingListApi(selections, []);
+        const data = await generateShoppingListApi(selections, [], additionalItemsSelected);
         renderShoppingList(data);
         hideError();
     } catch (err) {
@@ -849,9 +896,10 @@ async function handleGenerate() {
 async function handleCopyShoppingList() {
     const selections = getSelectedRecipes();
     const pantryItems = getSelectedPantryItems();
+    const additionalItemsSelected = getSelectedAdditionalItems();
 
     try {
-        const data = await generateShoppingListApi(selections, pantryItems);
+        const data = await generateShoppingListApi(selections, pantryItems, additionalItemsSelected);
         await navigator.clipboard.writeText(data.formatted_text);
         copyBtn.textContent = 'Copied!';
         setTimeout(() => {
@@ -1018,8 +1066,10 @@ function setupAutoRefresh() {
                 console.log('Recipe update detected, refreshing...');
                 try {
                     recipes = await fetchRecipes();
+                    additionalItems = await fetchAdditionalItems();
                     renderRecipeGrid();
                     renderRecipeList();
+                    renderAdditionalItems();
                     
                     // Show subtle notification
                     const banner = document.createElement('div');
@@ -1051,11 +1101,13 @@ async function init() {
     // Load font size preference
     loadFontSize();
 
-    // Load recipes
+    // Load recipes and additional items
     try {
         recipes = await fetchRecipes();
+        additionalItems = await fetchAdditionalItems();
         renderRecipeGrid();
         renderRecipeList();
+        renderAdditionalItems();
     } catch (err) {
         showError('Failed to load recipes. Make sure the server is running.');
     }

@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from src.models.database import init_db, get_all_recipes, get_ingredients_for_recipes
 from src.services.categories import get_category, _load_zones
+from src.services.additional_items import get_additional_items
 
 
 def analyze_zones():
@@ -41,11 +42,15 @@ def analyze_zones():
     recipe_ids = [r.id for r in recipes]
     ingredients = get_ingredients_for_recipes(recipe_ids)
     
-    if not ingredients:
-        print("⚠️  No ingredients found")
+    # Get additional items
+    additional_items = get_additional_items()
+    
+    total_items = len(ingredients) + len(additional_items)
+    if total_items == 0:
+        print("⚠️  No ingredients or additional items found")
         return
     
-    print(f"🔍 Analyzing {len(ingredients)} ingredients from {len(recipes)} recipes")
+    print(f"🔍 Analyzing {len(ingredients)} recipe ingredients + {len(additional_items)} additional items")
     print()
     
     # Categorize ingredients
@@ -53,6 +58,7 @@ def analyze_zones():
     unzoned_items = Counter()
     zone_distribution = Counter()
     
+    # Process recipe ingredients
     for ing in ingredients:
         name = ing.name
         zone = get_category(name)
@@ -61,6 +67,16 @@ def analyze_zones():
             unzoned_items[name] += 1
         else:
             zoned_items[name] += 1
+            zone_distribution[zone] += 1
+    
+    # Process additional items
+    for item in additional_items:
+        zone = get_category(item)
+        
+        if zone == "unzoned":
+            unzoned_items[item] += 1
+        else:
+            zoned_items[item] += 1
             zone_distribution[zone] += 1
     
     # Display zone distribution

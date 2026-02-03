@@ -23,4 +23,10 @@ zone12: ketchup, mustard, mayo, mayonnaise, sauce, vinegar, soy sauce, hot sauce
 zone13: salt, pepper, cumin, paprika, oregano, thyme, cinnamon, nutmeg, cayenne, chili powder, curry
 zone14: juice, soda, water, coffee, tea, wine, beer
 zone15: chips, crackers, nuts, popcorn
+zone16: paper towels, toilet paper, trash bags, aluminum foil, plastic wrap
+zone17: laundry detergent, dish soap, dish detergent, all-purpose cleaner, sponges
+zone18: shampoo, soap, toothpaste
+zone19: baby formula, baby food, diapers, wipes
+zone20: dog food, cat food, cat litter
+zone21: batteries, light bulbs
 

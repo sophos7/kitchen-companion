@@ -320,6 +320,12 @@ body {
     color: var(--text-secondary);
 }
 
+.section-heading {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
 .hint {
     font-weight: normal;
     font-size: 0.875rem;
@@ -379,6 +385,36 @@ body {
 
 .recipe-item.has-error .recipe-name {
     color: var(--error);
+}
+
+/* Additional items */
+.additional-items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.additional-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.additional-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+.additional-item label {
+    flex: 1;
+    cursor: pointer;
+    user-select: none;
 }
 
 .loading, .placeholder {

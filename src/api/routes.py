@@ -19,6 +19,7 @@ from src.services.combiner import combine_ingredients
 from src.services.pantry import filter_pantry_items, reload_pantry
 from src.services.categories import reload_categories
 from src.services.exporter import recipe_to_html, shopping_list_to_text, inject_timer_buttons
+from src.services.additional_items import get_additional_items, reload_additional_items
 
 router = APIRouter()
 
@@ -70,6 +71,7 @@ class ShoppingListRequest(BaseModel):
 
     selections: list[RecipeSelection]
     include_pantry: list[str] = []
+    additional_items: list[str] = []
 
 
 class ShoppingListResponse(BaseModel):
@@ -117,6 +119,12 @@ async def list_recipes():
         )
         for r in recipes
     ]
+
+
+@router.get("/additional-items")
+async def list_additional_items():
+    """Get list of additional non-recipe shopping items."""
+    return {"items": get_additional_items()}
 
 
 @router.get("/recipes/{recipe_id}", response_model=RecipeDetailResponse)
@@ -182,6 +190,22 @@ async def generate_shopping_list(request: ShoppingListRequest):
 
     # Filter pantry items
     shopping_items, pantry_items = filter_pantry_items(combined)
+    
+    # Add selected additional items (with zones)
+    from src.services.categories import get_category, sort_by_category
+    
+    for item in request.additional_items:
+        zone = get_category(item)
+        shopping_items.append({
+            "name": item,
+            "quantity": None,
+            "unit": None,
+            "display": item,
+            "category": zone,
+        })
+    
+    # Re-sort all items by zone after adding additional items
+    shopping_items = sort_by_category(shopping_items)
 
     # Format text output
     formatted_text = shopping_list_to_text(shopping_items, request.include_pantry)
@@ -198,6 +222,7 @@ async def refresh_recipes():
     """Rescan recipes folder and update database."""
     reload_pantry()
     reload_categories()
+    reload_additional_items()
     results = scan_recipes()
     return ScanResponse(**results)
 
