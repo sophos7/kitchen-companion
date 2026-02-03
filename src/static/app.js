@@ -1008,6 +1008,45 @@ async function handleRefresh() {
 
 // ============ Initialize ============
 
+function setupAutoRefresh() {
+    // Set up EventSource for automatic recipe updates
+    try {
+        const eventSource = new EventSource(`${API_BASE}/events`);
+        
+        eventSource.onmessage = async (event) => {
+            if (event.data === 'recipe_update') {
+                console.log('Recipe update detected, refreshing...');
+                try {
+                    recipes = await fetchRecipes();
+                    renderRecipeGrid();
+                    renderRecipeList();
+                    
+                    // Show subtle notification
+                    const banner = document.createElement('div');
+                    banner.className = 'auto-refresh-banner';
+                    banner.textContent = 'Recipes updated';
+                    document.body.appendChild(banner);
+                    
+                    setTimeout(() => {
+                        banner.classList.add('fade-out');
+                        setTimeout(() => banner.remove(), 300);
+                    }, 2000);
+                } catch (err) {
+                    console.error('Auto-refresh failed:', err);
+                }
+            }
+        };
+        
+        eventSource.onerror = (error) => {
+            console.log('EventSource connection lost, will retry automatically');
+        };
+        
+        console.log('Auto-refresh enabled');
+    } catch (err) {
+        console.log('Auto-refresh not available:', err);
+    }
+}
+
 async function init() {
     // Load font size preference
     loadFontSize();
@@ -1020,6 +1059,9 @@ async function init() {
     } catch (err) {
         showError('Failed to load recipes. Make sure the server is running.');
     }
+    
+    // Set up auto-refresh
+    setupAutoRefresh();
 
     // Home view events
     shoppingBtn.addEventListener('click', () => showView('shopping'));

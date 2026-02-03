@@ -1,10 +1,12 @@
 """FastAPI routes for Kitchen Companion."""
 
+import asyncio
 import os
 import re
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from src.models.database import (
@@ -19,6 +21,18 @@ from src.services.categories import reload_categories
 from src.services.exporter import recipe_to_html, shopping_list_to_text, inject_timer_buttons
 
 router = APIRouter()
+
+# Event queue for SSE notifications
+recipe_update_subscribers = []
+
+
+def notify_recipe_update():
+    """Notify all connected clients that recipes have been updated."""
+    for queue in recipe_update_subscribers:
+        try:
+            queue.put_nowait({"type": "recipe_update"})
+        except asyncio.QueueFull:
+            pass
 
 
 class RecipeResponse(BaseModel):
@@ -238,4 +252,34 @@ async def upload_recipe(request: UploadRecipeRequest):
     return UploadRecipeResponse(
         filename=safe_filename,
         message=f"Recipe '{safe_filename}' saved successfully"
+    )
+
+
+@router.get("/events")
+async def recipe_update_events():
+    """Server-Sent Events endpoint for recipe updates."""
+    async def event_generator():
+        queue = asyncio.Queue(maxsize=10)
+        recipe_update_subscribers.append(queue)
+        
+        try:
+            while True:
+                # Send heartbeat every 30 seconds to keep connection alive
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    yield f"data: {event['type']}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": heartbeat\n\n"
+        except asyncio.CancelledError:
+            recipe_update_subscribers.remove(queue)
+            raise
+    
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
     )

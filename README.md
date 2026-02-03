@@ -5,6 +5,7 @@ A Python/FastAPI web application for managing recipes, generating shopping lists
 ## Features
 
 - **Recipe Management**: Store recipes in markdown format with automatic parsing
+- **Auto-Refresh**: Recipes automatically reload when files change (no manual refresh needed)
 - **Shopping List Generation**: Combine ingredients from multiple recipes with automatic unit conversion
 - **Smart Ingredient Combining**: Automatically combines duplicate ingredients (e.g., 500g + 500g = 1kg)
 - **Pantry Filtering**: Filter out pantry staples from your shopping list
@@ -138,13 +139,25 @@ meat: chicken, beef, pork
 
 ## Development
 
-The application hot-reloads when files change. Recipe files are automatically rescanned when modified.
+The application hot-reloads when files change. Recipe files are **automatically detected and refreshed** in real-time - no manual refresh needed!
+
+### Auto-Refresh Feature
+
+- Uses file system watching (watchdog) to detect recipe changes
+- Server-Sent Events (SSE) push updates to connected clients
+- Recipes automatically reload when you:
+  - Add new recipe files
+  - Edit existing recipes
+  - Delete recipes
+- Subtle notification appears when recipes update
 
 ### Adding New Recipes
 
 1. Create a `.md` file in the `recipes/` folder
-1. Follow the recipe format above
-1. Click "Refresh" in the UI or restart the app
+2. Follow the recipe format above
+3. Save the file - it will automatically appear in the UI!
+
+No restart or manual refresh required.
 
 ## License
 
