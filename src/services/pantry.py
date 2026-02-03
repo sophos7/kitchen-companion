@@ -3,7 +3,7 @@
 import os
 from functools import lru_cache
 
-PANTRY_PATH = os.environ.get("PANTRY_PATH", "pantry.txt")
+PANTRY_PATH = os.environ.get("PANTRY_PATH", "config/pantry.txt")
 
 
 @lru_cache(maxsize=1)

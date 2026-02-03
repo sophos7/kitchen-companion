@@ -6,12 +6,10 @@ services:
     volumes:
       - ./recipes:/app/recipes
       - ./data:/app/data
-      - ./pantry.txt:/app/pantry.txt:ro
-      - ./categories.txt:/app/categories.txt:ro
-      - ./additional-items.txt:/app/additional-items.txt:ro
+      - ./config:/app/config:ro
     environment:
       - RECIPES_PATH=/app/recipes
       - DATA_PATH=/app/data
-      - PANTRY_PATH=/app/pantry.txt
-      - CATEGORIES_PATH=/app/categories.txt
-      - ADDITIONAL_ITEMS_PATH=/app/additional-items.txt
+      - PANTRY_PATH=/app/config/pantry.txt
+      - CATEGORIES_PATH=/app/config/categories.txt
+      - ADDITIONAL_ITEMS_PATH=/app/config/additional-items.txt

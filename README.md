@@ -69,8 +69,10 @@ kitchen-companion/
 │   └── static/       # Frontend files
 ├── recipes/          # Recipe markdown files
 ├── data/             # SQLite database (auto-created)
-├── pantry.txt        # Pantry items configuration
-├── categories.txt    # Ingredient categories (optional)
+├── config/           # Configuration files
+│   ├── pantry.txt
+│   ├── categories.txt
+│   └── additional-items.txt
 └── docker-compose.yml
 ```
 
@@ -107,7 +109,9 @@ Servings: 4
 
 ## Configuration
 
-### Pantry Items (`pantry.txt`)
+All configuration files live in the `config/` directory:
+
+### Pantry Items (`config/pantry.txt`)
 
 List items you always have on hand (one per line):
 
@@ -119,7 +123,7 @@ garlic
 onion
 ```
 
-### Additional Items (`additional-items.txt`)
+### Additional Items (`config/additional-items.txt`)
 
 Non-recipe items like household goods that you want to add to shopping lists:
 
@@ -141,7 +145,7 @@ laundry detergent
 - Included in zone analysis CLI tool
 - Use for household items, baby products, pet supplies, etc.
 
-### Store Zones (`categories.txt`)
+### Store Zones (`config/categories.txt`)
 
 Organize shopping lists by your store's actual layout using numbered zones:
 
@@ -167,6 +171,8 @@ zone5: bread, rolls
 - Multiple produce sections? Map them to `zone1` and `zone8`
 - Dairy split across the store? Use `zone4` and `zone12`
 - Flexible to any store layout - number zones in the order you shop
+
+Edit `config/categories.txt` to match your store's physical layout.
 
 ## API Endpoints
 
@@ -224,7 +230,7 @@ python zones.py
   ...
   Unzoned                 8 (5.2%)
 
-⚠️  Unzoned Items (add these to categories.txt):
+⚠️  Unzoned Items (add these to config/categories.txt):
 ------------------------------------------------------------
   • paprika                                  (in 5 recipes)
   • cumin                                    (in 3 recipes)
@@ -243,7 +249,7 @@ Shows all configured zones and their pattern lists.
 
 1. Add new recipes
 2. Run `python zones.py` to see unzoned ingredients
-3. Edit `categories.txt` to add missing items to appropriate zones
+3. Edit `config/categories.txt` to add missing items to appropriate zones
 4. Repeat as needed
 
 ## License

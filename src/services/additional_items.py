@@ -3,7 +3,7 @@
 import os
 from functools import lru_cache
 
-ADDITIONAL_ITEMS_PATH = os.environ.get("ADDITIONAL_ITEMS_PATH", "additional-items.txt")
+ADDITIONAL_ITEMS_PATH = os.environ.get("ADDITIONAL_ITEMS_PATH", "config/additional-items.txt")
 
 
 @lru_cache(maxsize=1)

@@ -3,7 +3,7 @@
 import os
 from functools import lru_cache
 
-CATEGORIES_PATH = os.environ.get("CATEGORIES_PATH", "categories.txt")
+CATEGORIES_PATH = os.environ.get("CATEGORIES_PATH", "config/categories.txt")
 
 
 @lru_cache(maxsize=1)
