@@ -21,6 +21,10 @@ let currentFontIndex = 1; // Default to medium
 let timers = new Map(); // id -> Timer instance
 let timerIdCounter = 0;
 
+// Alarm state
+let alertingTimers = new Set(); // Set of timer IDs currently alerting
+let alarmSoundInterval = null;
+
 // Timer class
 class Timer {
     constructor(id, durationMs, label) {
@@ -151,8 +155,8 @@ function onTimerComplete(id) {
     // Update UI
     updateTimerDisplay(id);
 
-    // Play sound
-    playTimerSound();
+    // Show alarm overlay with repeating sound
+    showAlarmOverlay(id);
 
     // Show browser notification
     showTimerNotification(timer.label);
@@ -220,6 +224,56 @@ function playTimerSound() {
     }
 }
 
+function startAlarmSound() {
+    if (alarmSoundInterval) return; // Already playing
+    playTimerSound(); // Play immediately
+    alarmSoundInterval = setInterval(playTimerSound, 1500); // Repeat every 1.5 seconds
+}
+
+function stopAlarmSound() {
+    if (alarmSoundInterval) {
+        clearInterval(alarmSoundInterval);
+        alarmSoundInterval = null;
+    }
+}
+
+// ============ Alarm Overlay Functions ============
+
+function showAlarmOverlay(timerId) {
+    const timer = timers.get(timerId);
+    if (!timer) return;
+
+    alertingTimers.add(timerId);
+    updateAlarmOverlay();
+
+    // Show overlay and start sound if this is the first alerting timer
+    if (alertingTimers.size === 1) {
+        alarmOverlay.classList.remove('hidden');
+        startAlarmSound();
+    }
+}
+
+function updateAlarmOverlay() {
+    alarmTimersContainer.innerHTML = '';
+
+    alertingTimers.forEach(timerId => {
+        const timer = timers.get(timerId);
+        if (timer) {
+            const timerEl = document.createElement('div');
+            timerEl.className = 'alarm-timer-item';
+            timerEl.textContent = timer.label;
+            alarmTimersContainer.appendChild(timerEl);
+        }
+    });
+}
+
+function dismissAllAlarms() {
+    alertingTimers.clear();
+    alarmOverlay.classList.add('hidden');
+    stopAlarmSound();
+    alarmTimersContainer.innerHTML = '';
+}
+
 function showTimerNotification(label) {
     if ('Notification' in window) {
         if (Notification.permission === 'granted') {
@@ -285,6 +339,10 @@ const timerSecondsInput = document.getElementById('timer-seconds');
 const timerCustomLabel = document.getElementById('timer-custom-label');
 const createTimerBtn = document.getElementById('create-timer-btn');
 const cancelTimerBtn = document.getElementById('cancel-timer-btn');
+
+// DOM Elements - Alarm Overlay
+const alarmOverlay = document.getElementById('alarm-overlay');
+const alarmTimersContainer = document.getElementById('alarm-timers');
 
 // DOM Elements - Shopping
 const shoppingBackBtn = document.getElementById('shopping-back-btn');
@@ -1324,6 +1382,9 @@ async function init() {
     createTimerBtn.addEventListener('click', createCustomTimer);
     cancelTimerBtn.addEventListener('click', closeCustomTimerModal);
     customTimerModal.querySelector('.modal-overlay').addEventListener('click', closeCustomTimerModal);
+
+    // Alarm overlay event - tap anywhere to dismiss all alarms
+    alarmOverlay.addEventListener('click', dismissAllAlarms);
     
     // Inline timer button delegation (for dynamically created buttons)
     cookingContent.addEventListener('click', handleInlineTimerClick);
