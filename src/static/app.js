@@ -1335,7 +1335,13 @@ async function init() {
                 trackLongTasks: true,
                 defaultPrivacyLevel: 'allow'
             });
-            console.log('Datadog RUM initialized');
+            window.DD_RUM.startSessionReplayRecording();
+            console.log('Datadog RUM initialized with session replay');
+        } else {
+            console.log('Datadog RUM not initialized:', {
+                enabled: config.datadog?.enabled,
+                ddRumLoaded: !!window.DD_RUM
+            });
         }
     } catch (err) {
         console.log('Config fetch failed, continuing without Datadog:', err);
