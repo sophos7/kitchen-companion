@@ -353,19 +353,6 @@ async function fetchRecipeDetail(id) {
     return response.json();
 }
 
-async function generateShoppingListApi(selections, includePantry) {
-    const response = await fetch(`${API_BASE}/shopping-list`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            selections,
-            include_pantry: includePantry,
-        }),
-    });
-    if (!response.ok) throw new Error('Failed to generate shopping list');
-    return response.json();
-}
-
 async function refreshRecipesApi() {
     const response = await fetch(`${API_BASE}/refresh`, { method: 'POST' });
     if (!response.ok) throw new Error('Failed to refresh recipes');
