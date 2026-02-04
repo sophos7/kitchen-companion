@@ -631,8 +631,14 @@ function handleSwipe() {
 }
 
 async function copyRecipeForEmail() {
+    // Create a clean copy without timer buttons
+    const temp = document.createElement('div');
+    temp.innerHTML = currentRecipeHtml;
+    temp.querySelectorAll('.timer-btn').forEach(btn => btn.remove());
+    const cleanHtml = temp.innerHTML;
+
     try {
-        const blob = new Blob([currentRecipeHtml], { type: 'text/html' });
+        const blob = new Blob([cleanHtml], { type: 'text/html' });
         const item = new ClipboardItem({ 'text/html': blob });
         await navigator.clipboard.write([item]);
         cookingCopyBtn.innerHTML = '&#10003;';
@@ -641,8 +647,6 @@ async function copyRecipeForEmail() {
         }, 2000);
     } catch (err) {
         // Fallback to plain text
-        const temp = document.createElement('div');
-        temp.innerHTML = currentRecipeHtml;
         await navigator.clipboard.writeText(temp.textContent);
         cookingCopyBtn.innerHTML = '&#10003;';
         setTimeout(() => {

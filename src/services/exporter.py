@@ -155,8 +155,15 @@ def recipe_to_html(raw_content: str) -> str:
 
     Returns HTML that pastes cleanly into Gmail and other email clients.
     """
+    # Strip YAML frontmatter if present
+    content = raw_content
+    if content.startswith("---"):
+        end_marker = content.find("---", 3)
+        if end_marker != -1:
+            content = content[end_marker + 3 :].lstrip()
+
     # Inject timer buttons before markdown conversion
-    content_with_timers, _ = inject_timer_buttons(raw_content)
+    content_with_timers, _ = inject_timer_buttons(content)
 
     # Convert markdown to HTML
     html = markdown.markdown(
