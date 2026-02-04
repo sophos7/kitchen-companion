@@ -303,13 +303,13 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem;
+    padding-top: calc(60px + 1rem); /* Account for fixed header */
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
 }
 
 .cooking-content h1 {
-    font-size: 1.5em;
-    margin-bottom: 0.5rem;
+    display: none; /* Title is already in the header */
 }
 
 .cooking-content h2 {
@@ -730,6 +730,7 @@ body {
 
     .cooking-content {
         padding: 2rem;
+        padding-top: calc(60px + 1.5rem); /* Account for fixed header */
         max-width: 800px;
         margin: 0 auto;
         width: 100%;
