@@ -2,6 +2,7 @@
 
 import logging
 import os
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -22,11 +23,15 @@ logger = logging.getLogger(__name__)
 # Global watcher instance
 watcher = None
 
+# Lock to prevent concurrent recipe scans
+_scan_lock = threading.Lock()
+
 
 def on_recipe_change():
     """Handle recipe file changes."""
-    scan_recipes()
-    notify_recipe_update()
+    with _scan_lock:
+        scan_recipes()
+        notify_recipe_update()
 
 
 @asynccontextmanager
