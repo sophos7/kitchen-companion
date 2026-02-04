@@ -36,6 +36,7 @@ class RecipeFileHandler(FileSystemEventHandler):
                 self.debounce_seconds,
                 self._execute_callback
             )
+            self._debounce_timer.daemon = True  # Don't block process exit
             self._debounce_timer.start()
 
     def _execute_callback(self):
@@ -80,6 +81,7 @@ class RecipeWatcher:
         """
         self.recipes_path = recipes_path
         self.observer = Observer()
+        self.observer.daemon = True  # Don't block process exit
         self.handler = RecipeFileHandler(on_change_callback)
         self._started = False
 
@@ -103,8 +105,14 @@ class RecipeWatcher:
             return
 
         try:
+            # Cancel any pending debounce timer
+            with self.handler._lock:
+                if self.handler._debounce_timer:
+                    self.handler._debounce_timer.cancel()
+                    self.handler._debounce_timer = None
+
             self.observer.stop()
-            self.observer.join(timeout=5)
+            self.observer.join(timeout=2)
             self._started = False
             logger.info("Recipe watcher stopped")
         except Exception as e:
