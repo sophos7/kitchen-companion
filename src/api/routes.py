@@ -254,6 +254,9 @@ async def refresh_recipes():
     return ScanResponse(**results)
 
 
+MAX_RECIPE_CONTENT_LENGTH = 100_000  # 100KB
+
+
 @router.post("/recipes/upload", response_model=UploadRecipeResponse)
 async def upload_recipe(request: UploadRecipeRequest):
     """Upload a new recipe to the recipes folder."""
@@ -263,6 +266,13 @@ async def upload_recipe(request: UploadRecipeRequest):
     # Validate filename
     if not filename:
         raise HTTPException(status_code=400, detail="Filename is required")
+
+    # Validate content length
+    if len(content) > MAX_RECIPE_CONTENT_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Recipe content too large (max {MAX_RECIPE_CONTENT_LENGTH // 1000}KB)"
+        )
 
     # Ensure .md extension
     if not filename.endswith('.md'):
