@@ -31,8 +31,7 @@ A Python/FastAPI web application for managing recipes, generating shopping lists
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
 - **Database**: SQLite
 - **Containerization**: Docker, Docker Compose
-- **Libraries**: 
-  - `pint` for unit conversion
+- **Libraries**:
   - `markdown` for recipe parsing
   - `uvicorn` for ASGI server
 

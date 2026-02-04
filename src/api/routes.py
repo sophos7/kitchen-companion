@@ -195,7 +195,10 @@ async def generate_shopping_list(request: ShoppingListRequest):
         for sel in request.selections:
             recipe = recipes.get(sel.recipe_id)
             if recipe:
-                multipliers[sel.recipe_id] = sel.target_servings / recipe.servings
+                if recipe.servings > 0:
+                    multipliers[sel.recipe_id] = sel.target_servings / recipe.servings
+                else:
+                    multipliers[sel.recipe_id] = 1.0  # Default to no scaling
 
         # Get ingredients
         ingredients = get_ingredients_for_recipes(recipe_ids)
@@ -310,7 +313,7 @@ async def recipe_update_events():
     async def event_generator():
         queue = asyncio.Queue(maxsize=10)
         recipe_update_subscribers.append(queue)
-        
+
         try:
             while True:
                 # Send heartbeat every 30 seconds to keep connection alive
@@ -320,9 +323,11 @@ async def recipe_update_events():
                 except asyncio.TimeoutError:
                     yield ": heartbeat\n\n"
         except asyncio.CancelledError:
-            recipe_update_subscribers.remove(queue)
             raise
-    
+        finally:
+            if queue in recipe_update_subscribers:
+                recipe_update_subscribers.remove(queue)
+
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
