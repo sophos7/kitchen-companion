@@ -268,6 +268,11 @@ function updateAlarmOverlay() {
 }
 
 function dismissAllAlarms() {
+    // Delete all alerting timers from the panel
+    alertingTimers.forEach(timerId => {
+        deleteTimer(timerId);
+    });
+
     alertingTimers.clear();
     alarmOverlay.classList.add('hidden');
     stopAlarmSound();
