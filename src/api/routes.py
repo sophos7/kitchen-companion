@@ -107,6 +107,12 @@ class UploadRecipeResponse(BaseModel):
     message: str
 
 
+@router.get("/health")
+async def health_check():
+    """Health check endpoint for container orchestration."""
+    return {"status": "healthy"}
+
+
 @router.get("/recipes", response_model=list[RecipeResponse])
 async def list_recipes():
     """Get all recipes."""
