@@ -1253,8 +1253,8 @@ async function init() {
     // Fetch config and initialize Datadog RUM if enabled
     try {
         const config = await fetch(`${API_BASE}/config`).then(r => r.json());
-        if (config.datadog.enabled && window.datadogRum) {
-            window.datadogRum.init({
+        if (config.datadog.enabled && window.DD_RUM) {
+            window.DD_RUM.init({
                 applicationId: config.datadog.applicationId,
                 clientToken: config.datadog.clientToken,
                 site: 'datadoghq.com',

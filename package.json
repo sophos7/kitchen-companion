@@ -3,7 +3,5 @@
   "version": "1.0.0",
   "description": "Kitchen Companion Web Application",
   "private": true,
-  "dependencies": {
-    "@datadog/browser-rum": "^6.0.0"
-  }
+  "dependencies": {}
 }

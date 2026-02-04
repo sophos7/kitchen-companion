@@ -211,33 +211,19 @@ The app supports Datadog Real User Monitoring for production analytics. To enabl
    ```bash
    export DD_RUM_APP_ID=your-application-id
    export DD_RUM_CLIENT_TOKEN=your-client-token
-   
+
    # Optional - customize service metadata (defaults shown)
    export DD_RUM_SERVICE=kitchen-companion
    export DD_RUM_ENV=production
    export DD_RUM_VERSION=1.0.0
    ```
 
-2. Or add to your shell profile (`~/.zshrc` or `~/.bashrc`):
-   ```bash
-   export DD_RUM_APP_ID=your-application-id
-   export DD_RUM_CLIENT_TOKEN=your-client-token
-   export DD_RUM_SERVICE=kitchen-companion
-   export DD_RUM_ENV=production
-   export DD_RUM_VERSION=1.0.0
-   ```
-
-3. Rebuild the Docker image to install the Datadog RUM package:
-   ```bash
-   docker-compose build
-   ```
-
-4. Start the app:
+1. Start the app:
    ```bash
    docker-compose up
    ```
 
-The Datadog RUM SDK is automatically installed via npm during the Docker build and included in the app. The app will initialize Datadog RUM if credentials are set. Without credentials, the app runs normally.
+The Datadog RUM SDK is loaded via CDN. The app initializes Datadog RUM if credentials are set. Without credentials, the app runs normally.
 
 ## Zone Management CLI
 
