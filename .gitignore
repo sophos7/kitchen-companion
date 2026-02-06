@@ -14,10 +14,14 @@ node_modules/
 package-lock.json
 
 # IDE
+.cursor/
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# Plan files
+*.plan
 
 # Project specific
 data/
