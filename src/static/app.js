@@ -435,6 +435,12 @@ async function uploadRecipeApi(filename, content) {
     return response.json();
 }
 
+async function fetchGitStatus() {
+    const response = await fetch(`${API_BASE}/git/status`);
+    if (!response.ok) throw new Error('Failed to fetch git status');
+    return response.json();
+}
+
 // ============ UI Functions ============
 
 function showError(message) {
@@ -1234,6 +1240,8 @@ async function handleSaveRecipe() {
         renderRecipeGrid();
         renderRecipeList();
 
+        refreshGitStatus();
+
         // Clear form and go home
         recipeFilename.value = '';
         recipeContent.value = '';
@@ -1269,6 +1277,49 @@ async function handleRefresh() {
     }
 }
 
+// ============ Git status indicator ============
+
+const gitStatusBanner = document.getElementById('git-status-banner');
+const GIT_STATUS_POLL_MS = 60_000;
+
+function renderGitStatus(status) {
+    if (!gitStatusBanner) return;
+
+    if (!status || !status.available || status.clean) {
+        gitStatusBanner.classList.add('hidden');
+        gitStatusBanner.textContent = '';
+        gitStatusBanner.title = '';
+        return;
+    }
+
+    const parts = [];
+    if (status.untracked_count > 0) {
+        parts.push(`${status.untracked_count} unsaved ${status.untracked_count === 1 ? 'recipe' : 'recipes'}`);
+    }
+    if (status.modified_count > 0) {
+        parts.push(`${status.modified_count} modified`);
+    }
+    if (status.deleted_count > 0) {
+        parts.push(`${status.deleted_count} deleted`);
+    }
+
+    gitStatusBanner.textContent = parts.join(', ');
+    gitStatusBanner.title = status.untracked.length
+        ? `Untracked:\n${status.untracked.join('\n')}`
+        : '';
+    gitStatusBanner.classList.remove('hidden');
+}
+
+async function refreshGitStatus() {
+    try {
+        const status = await fetchGitStatus();
+        renderGitStatus(status);
+    } catch (err) {
+        console.log('Git status check failed:', err);
+        renderGitStatus(null);
+    }
+}
+
 // ============ Initialize ============
 
 function setupAutoRefresh() {
@@ -1286,7 +1337,9 @@ function setupAutoRefresh() {
                     renderRecipeGrid();
                     renderRecipeList();
                     renderAdditionalItems();
-                    
+
+                    refreshGitStatus();
+
                     // Show subtle notification
                     const banner = document.createElement('div');
                     banner.className = 'auto-refresh-banner';
@@ -1358,7 +1411,10 @@ async function init() {
     } catch (err) {
         showError('Failed to load recipes. Make sure the server is running.');
     }
-    
+
+    refreshGitStatus();
+    setInterval(refreshGitStatus, GIT_STATUS_POLL_MS);
+
     // Set up auto-refresh
     setupAutoRefresh();
 

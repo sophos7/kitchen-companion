@@ -1050,6 +1050,24 @@ body {
     -moz-appearance: textfield;
 }
 
+/* Git status banner: passive indicator for uncommitted recipe files */
+.git-status-banner {
+    margin: 0.5rem 1rem 0;
+    padding: 0.5rem 0.875rem;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    cursor: default;
+}
+
+.git-status-banner.hidden {
+    display: none;
+}
+
 /* Auto-refresh notification banner */
 .auto-refresh-banner {
     position: fixed;

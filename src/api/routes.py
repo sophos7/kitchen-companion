@@ -20,6 +20,7 @@ from src.services.pantry import filter_pantry_items, reload_pantry
 from src.services.categories import reload_categories
 from src.services.exporter import recipe_to_html, shopping_list_to_text, inject_timer_buttons
 from src.services.additional_items import get_additional_items, reload_additional_items
+from src.services.git_status import get_recipe_git_status, invalidate_cache as invalidate_git_status_cache
 
 router = APIRouter()
 
@@ -105,6 +106,17 @@ class UploadRecipeResponse(BaseModel):
 
     filename: str
     message: str
+
+
+class GitStatusResponse(BaseModel):
+    """Snapshot of the recipes directory's git status."""
+
+    available: bool
+    clean: bool
+    untracked_count: int
+    modified_count: int
+    deleted_count: int
+    untracked: list[str]
 
 
 @router.get("/health")
@@ -317,10 +329,23 @@ async def upload_recipe(request: UploadRecipeRequest):
             detail=f"Failed to save recipe: {e}"
         )
 
+    invalidate_git_status_cache()
+
     return UploadRecipeResponse(
         filename=safe_filename,
         message=f"Recipe '{safe_filename}' saved successfully"
     )
+
+
+@router.get("/git/status", response_model=GitStatusResponse)
+def git_status():
+    """Return git status for the recipes directory.
+
+    Returns `available: false` when the recipes directory is not a git
+    working tree or git is not installed. Always returns 200 so the UI
+    can decide whether to render the indicator.
+    """
+    return GitStatusResponse(**get_recipe_git_status())
 
 
 @router.get("/events")
