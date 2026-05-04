@@ -9,9 +9,7 @@ venv/
 ENV/
 env/
 
-# Node
 node_modules/
-package-lock.json
 
 # IDE
 .cursor/
