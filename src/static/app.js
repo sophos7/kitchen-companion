@@ -1,6 +1,7 @@
 // Kitchen Companion App
 
-const API_BASE = '/api';
+const BASE_PATH = document.querySelector('meta[name="base-path"]')?.content || '';
+const API_BASE = `${BASE_PATH}/api`;
 
 // State
 let recipes = [];
