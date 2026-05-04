@@ -173,6 +173,53 @@ zone5: bread, rolls
 
 Edit `config/categories.txt` to match your store's physical layout.
 
+### Reverse Proxy (`BASE_PATH`)
+
+To run the app behind a reverse proxy at a sub-path (for example `http://your-host/kitchen-companion`), set the `BASE_PATH` environment variable to match the prefix.
+
+In `docker-compose.yml`:
+
+```yaml
+services:
+  kitchen-companion:
+    environment:
+      - BASE_PATH=/kitchen-companion
+```
+
+Minimal Caddyfile snippet:
+
+```
+:80 {
+    reverse_proxy /kitchen-companion* kitchen-companion:8080
+}
+```
+
+Equivalent nginx snippet:
+
+```nginx
+server {
+    listen 80;
+
+    location /kitchen-companion/ {
+        proxy_pass http://kitchen-companion:8080;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 24h;
+    }
+}
+```
+
+The proxy must forward the prefix as-is (do **not** strip it). For nginx, that means `proxy_pass http://kitchen-companion:8080;` with **no trailing slash** on the URL — adding one would strip the prefix. The `proxy_buffering off` line is required so server-sent events (used for recipe auto-refresh) stream to the browser instead of being buffered.
+
+When `BASE_PATH` is empty (the default), the app behaves exactly as before and serves at the root.
+
 ## API Endpoints
 
 - `GET /api/recipes` - List all recipes
