@@ -20,3 +20,6 @@ services:
       - DD_RUM_SERVICE=${DD_RUM_SERVICE:-kitchen-companion}
       - DD_RUM_ENV=${DD_RUM_ENV:-rpi5}
       - DD_RUM_VERSION=${DD_RUM_VERSION:-1.0.0}
+      # Set when running behind a path-based reverse proxy (e.g. /kitchen-companion).
+      # Leave unset to serve at root. See README "Reverse Proxy (BASE_PATH)" section.
+      # - BASE_PATH=/kitchen-companion
