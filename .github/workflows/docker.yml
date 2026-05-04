@@ -134,3 +134,25 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+
+      - name: Write job summary
+        run: |
+          {
+            echo "## Published image"
+            echo
+            echo "**Tags:**"
+            echo
+            jq -r '.tags[] | "- `\(.)`"' <<< "$DOCKER_METADATA_OUTPUT_JSON"
+            echo
+            echo "**Pull commands:**"
+            echo
+            echo '```bash'
+            jq -r '.tags[] | "docker pull \(.)"' <<< "$DOCKER_METADATA_OUTPUT_JSON"
+            echo '```'
+            echo
+            echo "**Inspect manifest:**"
+            echo
+            echo '```bash'
+            echo "docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
