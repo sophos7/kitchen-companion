@@ -1495,6 +1495,7 @@ async function init() {
         updateSaveButton();
     });
     recipeFilename.addEventListener('input', updateSaveButton);
+    saveRecipeBtn.addEventListener('click', handleSaveRecipe);
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {

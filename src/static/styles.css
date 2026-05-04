@@ -10,6 +10,7 @@
     --accent-hover: #6bb3ff;
     --error: #ff6b6b;
     --success: #4ecdc4;
+    --warning: #f5a623;
     --border: #333333;
 }
 
@@ -1057,7 +1058,7 @@ body {
     background-color: var(--bg-secondary);
     color: var(--text-secondary);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
+    border-left: 3px solid var(--warning);
     border-radius: 4px;
     font-size: 0.85rem;
     line-height: 1.4;
