@@ -13,6 +13,7 @@ let touchEndX = 0;
 let searchQuery = '';
 let activeFilters = new Set();
 let shoppingSearchQuery = '';
+let selectedRecipes = new Map();
 
 // Font size levels
 const FONT_SIZES = ['font-sm', 'font-md', 'font-lg', 'font-xl'];
@@ -994,6 +995,15 @@ function renderRecipeList() {
             </div>
         `;
     }).join('');
+
+    recipeList.querySelectorAll('.recipe-item').forEach(item => {
+        const id = parseInt(item.dataset.id);
+        if (!selectedRecipes.has(id)) return;
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const select = item.querySelector('.servings-select');
+        if (checkbox) checkbox.checked = true;
+        if (select) select.value = selectedRecipes.get(id);
+    });
 }
 
 function handleShoppingSearch(e) {
@@ -1031,17 +1041,10 @@ function renderShoppingList(data) {
 }
 
 function getSelectedRecipes() {
-    const selections = [];
-    recipeList.querySelectorAll('.recipe-item').forEach(item => {
-        const checkbox = item.querySelector('input[type="checkbox"]');
-        if (checkbox && checkbox.checked) {
-            const id = parseInt(item.dataset.id);
-            const select = item.querySelector('.servings-select');
-            const targetServings = parseInt(select.value);
-            selections.push({ recipe_id: id, target_servings: targetServings });
-        }
-    });
-    return selections;
+    return Array.from(selectedRecipes.entries()).map(([recipe_id, target_servings]) => ({
+        recipe_id,
+        target_servings,
+    }));
 }
 
 function getSelectedPantryItems() {
@@ -1131,8 +1134,12 @@ async function handleCopyShoppingList() {
 }
 
 function handleSelectAll() {
-    recipeList.querySelectorAll('input[type="checkbox"]:not(:disabled)').forEach(cb => {
-        cb.checked = true;
+    recipeList.querySelectorAll('.recipe-item:not(.has-error)').forEach(item => {
+        const id = parseInt(item.dataset.id);
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const select = item.querySelector('.servings-select');
+        if (checkbox) checkbox.checked = true;
+        selectedRecipes.set(id, parseInt(select.value));
     });
 }
 
@@ -1140,6 +1147,7 @@ function handleClearAll() {
     recipeList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
         cb.checked = false;
     });
+    selectedRecipes.clear();
     shoppingList.innerHTML = '<p class="placeholder">Select recipes and click Generate</p>';
     pantrySection.classList.add('hidden');
     copyBtn.disabled = true;
@@ -1267,6 +1275,7 @@ async function handleRefresh() {
     try {
         await refreshRecipesApi();
         recipes = await fetchRecipes();
+        selectedRecipes.clear();
         renderFilterChips();
         renderRecipeGrid();
         renderRecipeList();
@@ -1463,6 +1472,21 @@ async function init() {
     shoppingSearchInput.addEventListener('input', handleShoppingSearch);
     selectAllBtn.addEventListener('click', handleSelectAll);
     clearAllBtn.addEventListener('click', handleClearAll);
+
+    recipeList.addEventListener('change', e => {
+        const item = e.target.closest('.recipe-item');
+        if (!item) return;
+        const id = parseInt(item.dataset.id);
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const select = item.querySelector('.servings-select');
+        if (checkbox && checkbox.checked) {
+            selectedRecipes.set(id, parseInt(select.value));
+        } else if (e.target === checkbox) {
+            selectedRecipes.delete(id);
+        } else if (e.target === select && selectedRecipes.has(id)) {
+            selectedRecipes.set(id, parseInt(select.value));
+        }
+    });
     nextToAdditionalBtn.addEventListener('click', () => showShoppingStep(2));
     skipToListBtn.addEventListener('click', handleGenerate);
     backToRecipesBtn.addEventListener('click', () => showShoppingStep(1));
