@@ -956,10 +956,24 @@ function showShoppingStep(step) {
     }
 }
 
+function snapshotSelections() {
+    recipeList.querySelectorAll('.recipe-item').forEach(item => {
+        const id = parseInt(item.dataset.id);
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const select = item.querySelector('.servings-select');
+        if (checkbox && checkbox.checked) {
+            selectedRecipes.set(id, parseInt(select.value));
+        } else if (checkbox && !checkbox.checked) {
+            selectedRecipes.delete(id);
+        }
+    });
+}
+
 function renderRecipeList() {
+    snapshotSelections();
+
     let filtered = recipes;
-    
-    // Apply search filter
+
     if (shoppingSearchQuery) {
         const query = shoppingSearchQuery.toLowerCase();
         filtered = filtered.filter(r => {
@@ -969,7 +983,7 @@ function renderRecipeList() {
             return nameMatch || categoryMatch || tagsMatch;
         });
     }
-    
+
     if (filtered.length === 0) {
         if (shoppingSearchQuery) {
             recipeList.innerHTML = '<p class="placeholder">No recipes match your search.</p>';
@@ -1041,6 +1055,7 @@ function renderShoppingList(data) {
 }
 
 function getSelectedRecipes() {
+    snapshotSelections();
     return Array.from(selectedRecipes.entries()).map(([recipe_id, target_servings]) => ({
         recipe_id,
         target_servings,
